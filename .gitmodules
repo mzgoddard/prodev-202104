@@ -1,0 +1,3 @@
+[submodule "ShenScript"]
+	path = ShenScript
+	url = https://github.com/rkoeninger/ShenScript.git
