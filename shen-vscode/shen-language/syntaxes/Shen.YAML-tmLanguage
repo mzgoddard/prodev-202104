@@ -1,0 +1,111 @@
+fileTypes:
+    - shen
+name: Shen
+patterns:
+    -
+        include: '#expressions'
+repository:
+    atoms:
+        patterns:
+            -
+                begin: '\"'
+                comment: 'Multiline Strings'
+                end: '\"'
+                name: string.quoted.double
+                patterns:
+                    - {match: '~A|~R|~S|~%|c#\d+;', name: constant.character.escape}
+                    - {match: 'c#[^;]*;', name: invalid.illegal}
+            -
+                comment: Numbers
+                match: '(?<=^|[\s()\[\]])[+-]*\d+\.?\d*(?=$|[\s;()\[\]])'
+                name: constant.numeric
+            -
+                comment: 'Malformed Numbers'
+                match: '(?<=^|[\s()\[\]])[+-]*\d+\.?\d*[^\s;()\[\]]+(?=$|[\s;()\[\]])'
+                name: invalid.illegal
+            -
+                comment: 'Special Forms'
+                match: '(?<=\()and|or|if|do|lambda|freeze|let|cond|cases|trap-error|where|package|defun|/.|define|defmacro|defcc|defprolog|datatype(?=$|[\s;()\[\]{}])'
+                name: keyword.control
+            -
+                comment: 'Special Operators'
+                match: '(?<=^|[\s()\[\]{}])->|<-|-->|<--|==>|<==|:=|__+(?=$|[\s;()\[\]{}])'
+                name: keyword.control
+            -
+                comment: 'Standard Operators'
+                match: '(?<=^|[\s()\[\]{}])=|==|<|>|<=|>=|\+|-|\*|/(?=$|[\s;()\[\]{}])'
+                name: keyword.operator
+            -
+                comment: 'Local Variables'
+                match: '(?<=^|[\s()\[\]{}])[A-Z][^\s()\[\];{}]*(?=$|[\s;()\[\]{}])'
+                name: variable.language
+            -
+                comment: 'Yacc Rule'
+                match: '(?<=^|[\s()\[\]])<[^\s()\[\]]*>(?=$|[\s;()\[\]])'
+                name: entity.name.tag
+            -
+                comment: 'Idle Symbols'
+                match: '(?<=^|[\s)\[\]{}])[^A-Z\s()\[\]:;\|{}][^\s()\[\];{}]*(?=$|[\s;()\[\]{}])'
+                name: constant.language
+            -
+                comment: 'Empty Lists'
+                match: '\(\)|\[\]'
+                name: constant.language
+    comments:
+        patterns:
+            -
+                match: '\\\\.*$'
+                name: comment.line
+            -
+                begin: '\\\*'
+                end: '\*\\'
+                name: comment.block
+    expressions:
+        patterns:
+            -
+                include: '#comments'
+            -
+                include: '#atoms'
+            -
+                include: '#parens'
+            -
+                include: '#squares'
+    parens:
+        patterns:
+            -
+                begin: '(\()(?:\s*(?:(define)\s+([^\s()\[\]{}]*)|(defmacro)\s+([^\s()\[\]{}]*)|(defprolog)\s+([^\s()\[\]{}]*)|(package)\s+([^\s()\[\]{}]*)|(datatype)\s+([^\s()\[\]{}]*)))?'
+                beginCaptures:
+                    2:
+                        name: storage.type.function.shen
+                    3:
+                        name: entity.name.function.shen
+                    4:
+                        name: storage.type.function.shen
+                    5:
+                        name: entity.name.function.shen
+                    6:
+                        name: storage.type.function.shen
+                    7:
+                        name: entity.name.function.shen
+                    8:
+                        name: storage.type.package.shen
+                    9:
+                        name: entity.name.section.shen
+                    10:
+                        name: storage.type.type.shen
+                    11:
+                        name: entity.name.type.shen
+                end: '(\))'
+                name: meta.group
+                patterns:
+                    - {include: '#expressions'}
+    squares:
+        patterns:
+            -
+                begin: '\['
+                end: '\]'
+                name: meta.group
+                patterns:
+                    - {include: '#expressions'}
+scopeName: source.shen
+uuid: 4f20d927-cddd-4fd7-a7a6-9739f008439d

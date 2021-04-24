@@ -1,0 +1,10 @@
+forall(x) People(x), Mortal :- Bob ^ Mortal
+
+Bob, Sally :- Mortal
+People(bob), People(sally) :- Mortal
+forall(x) People(x) :- Mortal
+
+:- forall(x) (P(x) ^ M(x))
+:- P(a) ^ M(a)
+
+:- M(bob)

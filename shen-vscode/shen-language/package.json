@@ -1,0 +1,25 @@
+{
+    "name": "shen-language",
+    "displayName": "Shen Language Support",
+    "description": "Language support for Shen",
+    "version": "0.0.1",
+    "engines": {
+        "vscode": "^1.55.0"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "contributes": {
+        "languages": [{
+            "id": "shen",
+            "aliases": ["Shen", "shen"],
+            "extensions": [".shen"],
+            "configuration": "./language-configuration.json"
+        }],
+        "grammars": [{
+            "language": "shen",
+            "scopeName": "source.shen",
+            "path": "./syntaxes/shen.tmLanguage"
+        }]
+    }
+}

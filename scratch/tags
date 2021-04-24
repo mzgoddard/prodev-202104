@@ -1,0 +1,214 @@
+tags
+inputs
+let
+string template "text"
+color
+route
+    originalPath
+image
+    resolution
+        width
+        height
+    format
+    pixel ratio
+style
+component
+    map
+sequents / guards "breakpoints"
+    language attribute
+        language:code
+        language:rtl
+        language:ruby
+    container attribute
+        container:width
+        container:height
+    viewport attribute
+
+[...]
+    switch
+    rename
+    remove
+
+[+] (let:{message:{text:string}}) [...] [+] component:confirm.message [...]
+    (input:)body (component)
+        [+] (hash/)component(:anonymous)
+            {message.text}
+            [+]
+    (input:)buttonOk (component)
+        [+] language:code.* [...] (hash/)component(:anonymous)
+            開始
+            [+]
+    (input:)buttonCancel (component)
+        [+] language:code.* [...] (hash/)component(:anonymous)
+            いいえ
+            [+]
+        [+]
+
+define show
+    [] -> []
+    [[case Id []] | []] -> []
+    [[case Id [CaseType CaseValue]] | Tail] ->
+        [container [
+            [add_case_button Id]
+            [case_button CaseType CaseValue]
+            [show Tail]
+            ]]
+[component]
+[container]
+    [children]
+    [add child]
+[map]
+    [component]
+
+[Obj | Ancestor]
+
+(define renderCase
+    (@p Id Test [@(p Value Nest) | Next]) State -> (if (Test Value State)
+
+
+Id case (/. Key Value State (= Value (getvalue Key State))) NestIds
+Id case Test NestedIds
+Id [(@p key id) | []]
+Id [(@p key atom) | []]
+Id document Schema Document
+Id file Filepath
+Id enum Name ConstantIds
+Id constant Name
+Id text Args Template
+
+define db
+define db<-
+
+define db
+    () -> (dict 1000)
+
+define <-db
+    Db Id -> (if (symbol? Id) (<-dict Db Id) Id)
+
+define entry->schema
+    (@p Schema _) -> 
+
+Id schema Attributes
+Id SchemaId Value
+
+TextSchema schema [oneOf [string [cons [string ConsGetterSchema]]]]
+ConsGetterSchema schema [oneOf [[cons [getter ConsGetterSchema]] [cons []]]]
+ComponentSchema schema [oneOf [[properties [tag [oneOf [string id]] attributes [properties string] children [arrayOf ComponentSchema]] text]]
+Id ButtonSchema [properties [body ComponentSchema buttonOk ComponentSchema buttonCancel ComponentSchema]]
+ConfirmId ComponentSchema 
+Id ComponentSchema [@debugName applicationRoot tag "div" children []]
+CaseSchema schema [pairs [id id]]
+Id CaseSchema [CaseEnumId ResultId | Next]
+Id EnumSchema [enumName EnumIds]
+Id EnumIdSchema [enumKeyName]
+
+(package ext []
+(define db [] -> [])
+(define <-db [] Id -> [])
+(define db-> [] Id Value -> [])
+(define transformProperties
+    _ [] _ _ -> []
+    Db [Key Schema | Next] Value State -> (if (hasProp Key Value)
+        [Key (transform Db Schema (getProp Key Value) State) | (transformProperties Db Next Value State)]
+        (transformProperties Db Next Value State)
+    )
+)
+(define transformOneOf
+    _ [] _ _ -> []
+    Db [Schema | Next] Value State -> (if (check Db Schema Value)
+        (transform Db Schema Value State)
+        (transformOneOf Db Next Value State)
+    )
+)
+(define transformCons
+    _ [] [_ | _] _ -> (fail)
+    _ [] [] _ -> []
+    Db [Schema | Next] [Item | NextItem] State -> [(transform Db Schema Item State) | (transformCons Db Next NextItem State)]
+    Db Id Value State -> (if (symbol? Id)
+        (transformCons Db (<-db Db Id) Value State)
+        (fail)
+    )
+)
+(define transformElements
+    _ _ [] _ -> []
+    Db Element [Item | Next] State -> [(transform Db Element Item State) | (transformElements Db Element Next State)]
+)
+(define transformSchema
+    Db properties Schema Value State -> (js.obj (transformProperties Db Schema Value State))
+    Db oneOf Schema Value State -> (transformOneOf Db Schema Value State)
+    Db cons Schema Value State -> (toArray (transformCons Db Schema Value State))
+    Db elements Schema Value State -> (toArray (transformElements Db Schema Value State))
+)
+(define transformComponent
+    Props -> ...
+)
+(define transformCase
+    Db [] State -> []
+    Db [CaseTest Result | Next] State -> (if (transformTest Db CaseTest State) (transform Db Result State) (transformCase Db Next State))
+)
+(define transform
+    Db component Value State -> (transformComponent (transform Db (<-db Db component) Value State))
+    Db case Case State -> (transformCase Db (<-db Db Case) State)
+    Db [Type Schema | Next] Value State -> (transformSchema Db Type (<-db Db Schema) (<-db Db Value) State)
+    Db Schema Value State -> (if (symbol? Schema)
+        (transform Db (<-db Db Schema) Value State)
+        (fail)
+    )
+)
+(define hasProp
+    Key [] -> false
+    Key [Key _ | _] -> true
+    Key [_ _ | Next] -> (hasProp Key Next)
+)
+(define getProp
+    Key [] -> (fail)
+    Key [Key Value | _] -> Value
+    Key [_ _ | Next] -> (getProp Key Next)
+)
+(define getPropOr
+    Key [] Default -> Default
+    Key [Key Value | _] _ -> Value
+    Key [_ _ | Next] Default -> (getPropOr Key Next Default)
+)
+(define checkProperties
+    _ [] _ -> true
+    Db [Key Schema | Next] Props -> (and
+        (if (hasProp Key Props) (check Db Schema (getProp Key Props)) true)
+        (checkProperties Db Next Props)
+    )
+)
+(define checkOneOf
+    _ [] _ -> (fail)
+    Db [Schema | _] Value <- (check Db Schema Value)
+    Db [_ | Next] Value -> (checkOneOf Db Next Value)
+)
+(define checkCons
+    _ [] _ -> true
+    Db [Schema | Next] [Value | NextValue] -> (and
+        (check Db Schema Value)
+        (checkCons Db Next NextValue)
+    )
+)
+(define checkElements
+    _ _ [] -> true
+    Db Schema [Value | Next] -> (and
+        (check Db Schema Value)
+        (checkElements Db Schema Next)
+    )
+)
+(define checkSchema
+    Db properties Props Value -> (checkProperties Db Props Value)
+    Db oneOf OneOf Value -> (checkOneOf Db OneOf Value)
+    Db cons Cons Value -> (checkCons Db Cons Value)
+    Db elements Element Value -> (checkElements Db Element Value)
+)
+(define check
+    _ id Value -> (symbol? Value)
+    _ string Value -> (string? Value)
+    _ [] _ -> true
+    Db [Type Schema | Next] Value -> (and
+        (checkSchema Db Type Schema Value)
+        (check Db Next Value)
+    )
+    Db Schema Value -> (check Db (<-db Db Schema) Value)
+)
